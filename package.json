@@ -1,6 +1,6 @@
 {
   "name": "react-autosizer",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "a simple component to generically size N components from a single source component.",
   "main": "lib/index.js",
   "keywords": [
