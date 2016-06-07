@@ -38,7 +38,6 @@ export default function reactAutosizer({ React }) {
         </div>
       )
     }
-
   }
   return Autosizer
 }
