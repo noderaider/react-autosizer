@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <base data-ice="baseUrl" href="../../../">
+  <title data-ice="title">lib/components/createAutoSizer.js | react-autosizer API Document</title>
+  <link type="text/css" rel="stylesheet" href="css/style.css">
+  <link type="text/css" rel="stylesheet" href="css/prettify-tomorrow.css">
+  <script src="script/prettify/prettify.js"></script>
+  
+  
+  <script src="script/manual.js"></script>
+</head>
+<body class="layout-container" data-ice="rootContainer">
+
+<header>
+  <a href="./">Home</a>
+  
+  <a href="identifiers.html">Reference</a>
+  <a href="source.html">Source</a>
+  
+  <a data-ice="repoURL" href="https://github.com/noderaider/react-autosizer" class="repo-url-github">Repository</a>
+  <div class="search-box">
+  <span>
+    <img src="./image/search.png">
+    <span class="search-input-edge"></span><input class="search-input"><span class="search-input-edge"></span>
+  </span>
+    <ul class="search-result"></ul>
+  </div>
+</header>
+
+<nav class="navigation" data-ice="nav"><div>
+  <ul>
+    
+  <li data-ice="doc"><div data-ice="dirPath" class="nav-dir-path">components</div><span data-ice="kind" class="kind-function">F</span><span data-ice="name"><span><a href="function/index.html#static-function-createAutoSizer">createAutoSizer</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-createConnect">createConnect</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-createMapDispatchToProps">createMapDispatchToProps</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-createMapStateToProps">createMapStateToProps</a></span></span></li>
+<li data-ice="doc"><span data-ice="kind" class="kind-variable">V</span><span data-ice="name"><span><a href="variable/index.html#static-variable-createPropTypes">createPropTypes</a></span></span></li>
+</ul>
+</div>
+</nav>
+
+<div class="content" data-ice="content"><h1 data-ice="title">lib/components/createAutoSizer.js</h1>
+<pre class="source-code line-number raw-source-code"><code class="prettyprint linenums" data-ice="content">import { addResizeListener, removeResizeListener } from &apos;detect-resize&apos;
+const should = require(&apos;chai&apos;).should()
+
+/**
+ * &lt;AutoSizer /&gt; factory
+ * @param  {...Object} options  &lt;AutoSizer /&gt; dependencies.
+ * @return {AutoSizer}          An &lt;AutoSizer /&gt; component.
+ */
+export default function createAutoSizer({ React }) {
+  const { Component, PropTypes } = React
+  class AutoSizer extends Component {
+    static propTypes = createPropTypes(React);
+    constructor(props) {
+      super(props)
+      this.state =  { height: 0
+                    , width: 0
+                    }
+    }
+    componentDidMount() {
+      const { src } = this.props
+      should.exist(src)
+      addResizeListener(src, this._handleResize)
+    }
+    componentWillUnmount() {
+      const { src } = this.props
+      should.exist(src)
+      removeResizeListener(src, this._handleResize)
+    }
+    _handleResize = e =&gt; {
+      const { src, onResize, ...eventArgs } = this.props
+
+      // Guard against AutoSizer component being removed from the DOM immediately after being added.
+      // This can result in invalid style values which can result in NaN values if we don&apos;t handle them.
+
+      const boundingRect = src.getBoundingClientRect()
+      const height = boundingRect.height || 0
+      const width = boundingRect.width || 0
+
+      const style = getComputedStyle(src)
+      const paddingLeft = parseInt(style.paddingLeft, 10) || 0
+      const paddingRight = parseInt(style.paddingRight, 10) || 0
+      const paddingTop = parseInt(style.paddingTop, 10) || 0
+      const paddingBottom = parseInt(style.paddingBottom, 10) || 0
+
+      this.setState({ height: height - paddingTop - paddingBottom
+                    , width: width - paddingLeft - paddingRight
+                    })
+
+      onResize({ height, width }, eventArgs)
+      console.warn(&apos;onResize executed&apos;, {height, width}, eventArgs)
+    };
+    _resizeTargets = (width, height) =&gt; {
+      const { target } = this.props
+      if(Array.isArray(target)) {
+        target.forEach(x =&gt; {
+          x.width = width
+          x.height = height
+        })
+      } else {
+        target.width = width
+        target.height = height
+      }
+    }
+    render() {
+      const { children } = this.props
+      return children || null
+    }
+  }
+  return AutoSizer
+}
+
+/**
+ * Interface factory for &lt;Autosizer /&gt; components.
+ * @param  {[type]} options.PropTypes [description]
+ * @return {[type]}                   [description]
+ */
+export const createPropTypes = ({ PropTypes }) =&gt; ( { src: PropTypes.object.isRequired
+                                                    , target: PropTypes.oneOfType([PropTypes.object, PropTypes.array]).isRequired
+                                                    , onResize: PropTypes.func
+                                                    } )
+
+/** Creates mapStateToProps for &lt;Autosizer /&gt; component */
+export const createMapStateToProps = ({}) =&gt; state =&gt; state
+
+/** Creates mapDispatchToProps for &lt;Autosizer /&gt; component */
+export const createMapDispatchToProps = ({}) =&gt; dispatch =&gt; ({})
+
+/**
+ * Creates a react-redux style connect function tailed for &lt;Autosizer /&gt;
+ * @param  {function}  options.connect  react-redux connect function dependency.
+ * @param  {...Object} options.rest     The rest of the connect related dependencies.
+ * @return {Autosizer}                       A higher order &lt;Autosizer /&gt; component.
+ */
+export const createConnect = ({ connect, ...rest }) =&gt; {
+  should.exist(connect, &apos;redux connect is required for &lt;Autosizer /&gt; connect&apos;)
+  connect.should.be.a(&apos;function&apos;)
+  const mapStateToProps = createMapStateToProps({ ...rest })
+  should.exist(mapStateToProps, &apos;mapStateToProps is required for &lt;Autosizer /&gt; connect&apos;)
+  mapStateToProps.should.be.a(&apos;function&apos;)
+  const mapDispatchToProps = createMapDispatchToProps({ ...rest })
+  should.exist(mapDispatchToProps, &apos;mapDispatchToProps is required for &lt;Autosizer /&gt; connect&apos;)
+  mapDispatchToProps.should.be.a(&apos;function&apos;)
+  return Component =&gt; connect(mapStateToProps, mapDispatchToProps)(Component)
+}
+</code></pre>
+
+</div>
+
+<footer class="footer">
+  Generated by <a href="https://esdoc.org">ESDoc<span data-ice="esdocVersion">(0.4.7)</span></a>
+</footer>
+
+<script src="script/search_index.js"></script>
+<script src="script/search.js"></script>
+<script src="script/pretty-print.js"></script>
+<script src="script/inherited-summary.js"></script>
+<script src="script/test-summary.js"></script>
+<script src="script/inner-link.js"></script>
+<script src="script/patch-for-local.js"></script>
+</body>
+</html>
