@@ -1,45 +1,72 @@
+import { addResizeListener, removeResizeListener } from 'detect-resize'
 const should = require('chai').should()
 
 /**
- * <Autosizer /> factory
- * @param  {...Object} options  <Autosizer /> dependencies.
- * @return {Autosizer}          An <Autosizer /> component.
+ * <AutoSizer /> factory
+ * @param  {...Object} options  <AutoSizer /> dependencies.
+ * @return {AutoSizer}          An <AutoSizer /> component.
  */
-export default function reactAutosizer({ React }) {
+export default function createAutoSizer({ React }) {
   const { Component, PropTypes } = React
-  class Autosizer extends Component {
+  class AutoSizer extends Component {
     static propTypes = createPropTypes(React);
-    componentDidMount() { this._addEvents() }
-    componentWillUnmount() { this._removeEvents() }
-    _addEvents = () => {
+    constructor(props) {
+      super(props)
+      this.state =  { height: 0
+                    , width: 0
+                    }
+    }
+    componentDidMount() {
       const { src } = this.props
       should.exist(src)
-      src.should.have.property('addEventListener', 'src should be an object with a resize event')
-                      .that.is.a('function')
-      src.addEventListener('resize', this._handleResize)
-    };
-    _removeEvents = () => {
+      addResizeListener(src, this._handleResize)
+    }
+    componentWillUnmount() {
       const { src } = this.props
       should.exist(src)
-      src.should.have.property('removeEventListener', 'src should be an object with a resize event')
-                      .that.is.a('function')
-      src.removeEventListener('resize', this._handleResize)
-    };
+      removeResizeListener(src, this._handleResize)
+    }
     _handleResize = e => {
-      const { onUpdate, ...eventArgs } = this.props
-      onUpdate(e, eventArgs)
-      console.warn('handleResize called', e, eventArgs)
+      const { src, onResize, ...eventArgs } = this.props
+
+      // Guard against AutoSizer component being removed from the DOM immediately after being added.
+      // This can result in invalid style values which can result in NaN values if we don't handle them.
+
+      const boundingRect = src.getBoundingClientRect()
+      const height = boundingRect.height || 0
+      const width = boundingRect.width || 0
+
+      const style = getComputedStyle(src)
+      const paddingLeft = parseInt(style.paddingLeft, 10) || 0
+      const paddingRight = parseInt(style.paddingRight, 10) || 0
+      const paddingTop = parseInt(style.paddingTop, 10) || 0
+      const paddingBottom = parseInt(style.paddingBottom, 10) || 0
+
+      this.setState({ height: height - paddingTop - paddingBottom
+                    , width: width - paddingLeft - paddingRight
+                    })
+
+      onResize({ height, width }, eventArgs)
+      console.warn('onResize executed', {height, width}, eventArgs)
     };
+    _resizeTargets = (width, height) => {
+      const { target } = this.props
+      if(Array.isArray(target)) {
+        target.forEach(x => {
+          x.width = width
+          x.height = height
+        })
+      } else {
+        target.width = width
+        target.height = height
+      }
+    }
     render() {
       const { children } = this.props
-      return (
-        <div>
-          {children}
-        </div>
-      )
+      return children || null
     }
   }
-  return Autosizer
+  return AutoSizer
 }
 
 /**
@@ -49,7 +76,7 @@ export default function reactAutosizer({ React }) {
  */
 export const createPropTypes = ({ PropTypes }) => ( { src: PropTypes.object.isRequired
                                                     , target: PropTypes.oneOfType([PropTypes.object, PropTypes.array]).isRequired
-                                                    , onUpdate: PropTypes.func
+                                                    , onResize: PropTypes.func
                                                     } )
 
 /** Creates mapStateToProps for <Autosizer /> component */

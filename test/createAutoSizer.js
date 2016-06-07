@@ -6,9 +6,9 @@ const chai = require('chai')
 chai.use(require('chai-enzyme')())
 const should = chai.should()
 
-describe('react-autosizer', () => {
+describe('createAutoSizer', () => {
   const lib = require('../lib')
-  const reactAutosizer = lib.default
-  it('exists', () => should.exist(reactAutosizer))
-  it('should be a function', () => reactAutosizer.should.be.a('function'))
+  const createAutoSizer = lib.default
+  it('exists', () => should.exist(createAutoSizer))
+  it('should be a function', () => createAutoSizer.should.be.a('function'))
 })
