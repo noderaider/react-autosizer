@@ -7,9 +7,19 @@ const should = require('chai').should()
  * @return {AutoSizer}          An <AutoSizer /> component.
  */
 export default function createAutoSizer({ React }) {
-  const { Component, PropTypes } = React
+  const { Component, PropTypes, cloneElement } = React
   class AutoSizer extends Component {
     static propTypes = createPropTypes(React);
+    set dimensions(value) {
+      should.exist(value, 'dimensions should have a value specified.')
+      const { width, height } = value
+      console.warn('setting autosizer dimensions', value)
+      this.setState({ width, height })
+    }
+    get dimensions() {
+      const { height, width } = this.state
+      return { height, width }
+    }
     constructor(props) {
       super(props)
       this.state =  { height: 0
@@ -17,22 +27,24 @@ export default function createAutoSizer({ React }) {
                     }
     }
     componentDidMount() {
-      const { src } = this.props
-      should.exist(src)
-      addResizeListener(src, this._handleResize)
+      should.exist(this._src)
+      addResizeListener(this._src, this._handleResize)
+      this._handleResize()
     }
     componentWillUnmount() {
-      const { src } = this.props
-      should.exist(src)
-      removeResizeListener(src, this._handleResize)
+      should.exist(this._src)
+      removeResizeListener(this._src, this._handleResize)
     }
-    _handleResize = e => {
-      const { src, onResize, ...eventArgs } = this.props
+    _handleResize = () => {
+      const { direction, traverseSource, onResize, ...eventArgs } = this.props
 
       // Guard against AutoSizer component being removed from the DOM immediately after being added.
       // This can result in invalid style values which can result in NaN values if we don't handle them.
 
+      const src = traverseSource ? traverseSource(this._src) : this._src
+      console.dir(src)
       const boundingRect = src.getBoundingClientRect()
+      console.warn('BOUNDINGRECT', boundingRect)
       const height = boundingRect.height || 0
       const width = boundingRect.width || 0
 
@@ -46,37 +58,70 @@ export default function createAutoSizer({ React }) {
                     , width: width - paddingLeft - paddingRight
                     })
 
-      onResize({ height, width }, eventArgs)
-      console.warn('onResize executed', {height, width}, eventArgs)
+      const dimensions = { height, width }
+      if(onResize)
+        onResize(dimensions, eventArgs)
+      console.warn('onResize executed', dimensions, eventArgs)
     };
-    _resizeTargets = (width, height) => {
+    _resizeTargets = dimensions => {
       const { target } = this.props
-      if(Array.isArray(target)) {
-        target.forEach(x => {
-          x.width = width
-          x.height = height
-        })
-      } else {
-        target.width = width
-        target.height = height
-      }
+      if(Array.isArray(target))
+        target.forEach(x => { x.dimensions = dimensions })
+      else
+        target.dimensions = dimensions
     }
     render() {
-      const { children } = this.props
-      return children || null
+      const { direction, children, disableHeight, disableWidth } = this.props
+      const { height, width } = this.state
+      const outerStyle = { overflow: 'visible' }
+
+      if (!disableHeight)
+        outerStyle.height = 0
+
+      if (!disableWidth)
+        outerStyle.width = 0
+
+      if(direction === 'down') {
+        return (
+          <div
+            ref={x => this._src = x && x.parentNode}
+            onScroll={this._onScroll}
+            style={outerStyle}
+          >
+            {children({ height, width }, this)}
+          </div>
+        )
+      } else if(direction === 'up') {
+        return (
+          <div
+            ref={x => this._src = x}
+            onScroll={this._onScroll}
+            //style={{position: 'absolute', height}}
+          >
+            {children}
+          </div>
+        )
+      } else throw new Error('unsupported AutoSizer direction.')
     }
+
+    // Prevent detectElementResize library from being triggered by this scroll event.
+    _onScroll = e => e.stopPropagation();
   }
+
   return AutoSizer
 }
 
 /**
- * Interface factory for <Autosizer /> components.
+ * Interface factory for <AutoSizer /> components.
  * @param  {[type]} options.PropTypes [description]
  * @return {[type]}                   [description]
  */
-export const createPropTypes = ({ PropTypes }) => ( { src: PropTypes.object.isRequired
-                                                    , target: PropTypes.oneOfType([PropTypes.object, PropTypes.array]).isRequired
+export const createPropTypes = ({ PropTypes }) => ( { targets: PropTypes.array
                                                     , onResize: PropTypes.func
+                                                    , direction: PropTypes.oneOf(['down', 'up']).isRequired
+                                                    , traverseSource: PropTypes.func
+                                                    , disableWidth: PropTypes.bool
+                                                    , disableHeight: PropTypes.bool
                                                     } )
 
 /** Creates mapStateToProps for <Autosizer /> component */
