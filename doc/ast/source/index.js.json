@@ -1,0 +1,185 @@
+{
+  "type": "Program",
+  "start": 0,
+  "end": 333,
+  "loc": {
+    "start": {
+      "line": 1,
+      "column": 0
+    },
+    "end": {
+      "line": 9,
+      "column": 0
+    }
+  },
+  "sourceType": "module",
+  "body": [
+    {
+      "type": "ImportDeclaration",
+      "start": 0,
+      "end": 58,
+      "loc": {
+        "start": {
+          "line": 1,
+          "column": 0
+        },
+        "end": {
+          "line": 1,
+          "column": 58
+        }
+      },
+      "specifiers": [
+        {
+          "type": "ImportDefaultSpecifier",
+          "start": 7,
+          "end": 22,
+          "loc": {
+            "start": {
+              "line": 1,
+              "column": 7
+            },
+            "end": {
+              "line": 1,
+              "column": 22
+            }
+          },
+          "local": {
+            "type": "Identifier",
+            "start": 7,
+            "end": 22,
+            "loc": {
+              "start": {
+                "line": 1,
+                "column": 7
+              },
+              "end": {
+                "line": 1,
+                "column": 22
+              }
+            },
+            "name": "createAutoSizer"
+          }
+        }
+      ],
+      "importKind": "value",
+      "source": {
+        "type": "Literal",
+        "start": 28,
+        "end": 58,
+        "loc": {
+          "start": {
+            "line": 1,
+            "column": 28
+          },
+          "end": {
+            "line": 1,
+            "column": 58
+          }
+        },
+        "value": "./components/createAutoSizer",
+        "rawValue": "./components/createAutoSizer",
+        "raw": "'./components/createAutoSizer'",
+        "leadingComments": null,
+        "trailingComments": null
+      },
+      "trailingComments": [
+        {
+          "type": "Block",
+          "value": "*\r\n * react-autosizer\r\n * Takes object with dependencies (React) and exports a component that controls a target(s) heighth/widths, based on a source height / width.\r\n * @return {Object}              <AutoSizer /> Component Factory\r\n ",
+          "start": 62,
+          "end": 299,
+          "loc": {
+            "start": {
+              "line": 3,
+              "column": 0
+            },
+            "end": {
+              "line": 7,
+              "column": 3
+            }
+          },
+          "range": [
+            62,
+            299
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ExportDefaultDeclaration",
+      "start": 301,
+      "end": 331,
+      "loc": {
+        "start": {
+          "line": 8,
+          "column": 0
+        },
+        "end": {
+          "line": 8,
+          "column": 30
+        }
+      },
+      "declaration": {
+        "type": "Identifier",
+        "start": 316,
+        "end": 331,
+        "loc": {
+          "start": {
+            "line": 8,
+            "column": 15
+          },
+          "end": {
+            "line": 8,
+            "column": 30
+          }
+        },
+        "name": "createAutoSizer",
+        "leadingComments": [
+          {
+            "type": "Block",
+            "value": "*\r\n * react-autosizer\r\n * Takes object with dependencies (React) and exports a component that controls a target(s) heighth/widths, based on a source height / width.\r\n * @return {Object}              <AutoSizer /> Component Factory\r\n ",
+            "start": 62,
+            "end": 299,
+            "loc": {
+              "start": {
+                "line": 3,
+                "column": 0
+              },
+              "end": {
+                "line": 7,
+                "column": 3
+              }
+            },
+            "range": [
+              62,
+              299
+            ]
+          }
+        ],
+        "trailingComments": []
+      },
+      "leadingComments": [
+        {
+          "type": "Block",
+          "value": "*\r\n * react-autosizer\r\n * Takes object with dependencies (React) and exports a component that controls a target(s) heighth/widths, based on a source height / width.\r\n * @return {Object}              <AutoSizer /> Component Factory\r\n ",
+          "start": 62,
+          "end": 299,
+          "loc": {
+            "start": {
+              "line": 3,
+              "column": 0
+            },
+            "end": {
+              "line": 7,
+              "column": 3
+            }
+          },
+          "range": [
+            62,
+            299
+          ]
+        }
+      ]
+    }
+  ]
+}
