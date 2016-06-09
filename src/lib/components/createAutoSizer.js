@@ -13,7 +13,7 @@ export default function createAutoSizer({ React }) {
     set dimensions(value) {
       should.exist(value, 'dimensions should have a value specified.')
       const { width, height } = value
-      console.warn('setting autosizer dimensions', value)
+      console.warn(`setting <AutoSizer /> dimensions via prop => ${this.props.name}`, value)
       this.setState({ width, height })
     }
     get dimensions() {
@@ -36,15 +36,24 @@ export default function createAutoSizer({ React }) {
       removeResizeListener(this._src, this._handleResize)
     }
     _handleResize = () => {
-      const { direction, traverseSource, onResize, ...eventArgs } = this.props
+      const { direction, traverseSource, onResize, disableHeight, disableWidth, ...eventArgs } = this.props
+      if(this.state.height !== 0 || this.state.width !== 0) {
+        console.warn(`bypassing resize => ${this.props.name}`)
+        return
+      }
 
       // Guard against AutoSizer component being removed from the DOM immediately after being added.
       // This can result in invalid style values which can result in NaN values if we don't handle them.
 
       const src = traverseSource ? traverseSource(this._src) : this._src
+      if(!src) {
+        console.warn(`could not traverse source... => ${this.props.name}`)
+        return
+      }
+
       console.dir(src)
       const boundingRect = src.getBoundingClientRect()
-      console.warn('BOUNDINGRECT', boundingRect)
+      console.warn(`BOUNDINGRECT => ${this.props.name}`, boundingRect)
       const height = boundingRect.height || 0
       const width = boundingRect.width || 0
 
@@ -54,14 +63,16 @@ export default function createAutoSizer({ React }) {
       const paddingTop = parseInt(style.paddingTop, 10) || 0
       const paddingBottom = parseInt(style.paddingBottom, 10) || 0
 
-      this.setState({ height: height - paddingTop - paddingBottom
-                    , width: width - paddingLeft - paddingRight
-                    })
-
+      let newState = {}
+      if(!disableHeight)
+        newState.height = height - paddingTop - paddingBottom
+      if(!disableWidth)
+        newState.width = width - paddingLeft - paddingRight
+      this.setState(newState)
       const dimensions = { height, width }
       if(onResize)
         onResize(dimensions, eventArgs)
-      console.warn('onResize executed', dimensions, eventArgs)
+      console.warn(`onResize executed => ${this.props.name}`, dimensions, eventArgs)
     };
     _resizeTargets = dimensions => {
       const { target } = this.props
@@ -116,7 +127,8 @@ export default function createAutoSizer({ React }) {
  * @param  {[type]} options.PropTypes [description]
  * @return {[type]}                   [description]
  */
-export const createPropTypes = ({ PropTypes }) => ( { targets: PropTypes.array
+export const createPropTypes = ({ PropTypes }) => ( { name: PropTypes.string.isRequired
+                                                    , targets: PropTypes.array
                                                     , onResize: PropTypes.func
                                                     , direction: PropTypes.oneOf(['down', 'up']).isRequired
                                                     , traverseSource: PropTypes.func
